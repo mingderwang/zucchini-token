@@ -26,8 +26,13 @@ contract MyTokenTest is Test {
         vm.stopPrank();
     }
 
+    // everyone can burn, not only for Onwer
+
     function testBurning() public {
         vm.startPrank(owner);
+        token.transfer(user, 100 * (10 ** token.decimals()));
+        vm.stopPrank();
+        vm.startPrank(user);
         token.burn(100 * (10 ** token.decimals()));
         assertEq(token.balanceOf(owner), 900 * (10 ** token.decimals()));
         vm.stopPrank();
@@ -43,6 +48,46 @@ contract MyTokenTest is Test {
         );
         vm.startPrank(user);
         token.mint(user, 500);
+        vm.stopPrank();
+    }
+
+    function testPauseState() public {
+        vm.startPrank(owner);
+        // Check initial state (should not be paused)
+        assertEq(token.paused(), false);
+
+        // Pause the token
+        token.pause();
+
+        // Verify the pause state
+        assertEq(token.paused(), true);
+
+        // Try transferring tokens (should fail when paused)
+        vm.expectRevert();
+        token.transfer(address(user), 100);
+
+        // Unpause the token
+        token.unpause();
+
+        // Verify the unpause state
+        assertEq(token.paused(), false);
+        assertEq(token.transfer(address(user), 100), true);
+
+        // Transfer tokens (should succeed after unpausing)
+        token.transfer(address(user), 100);
+        assertEq(token.balanceOf(address(user)), 200);
+        vm.stopPrank();
+    }
+
+    function testOnlyOwnerCanPause() public {
+        vm.expectRevert(
+            abi.encodeWithSelector(
+                Ownable.OwnableUnauthorizedAccount.selector,
+                address(user)
+            )
+        );
+        vm.startPrank(user);
+        token.pause();
         vm.stopPrank();
     }
 }

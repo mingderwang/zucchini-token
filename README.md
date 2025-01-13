@@ -1,3 +1,8 @@
+# deployment
+
+```
+forge create --account ming-holesky-deployer --verify --broadcast src/MyToken.sol:MyToken --constructor-args "0x413C82FA6bb147e9FeD60d31547b0894a7E0b42d" "MyZB Token" "ZBT" 1000000000
+```
 ## Foundry
 
 **Foundry is a blazing fast, portable and modular toolkit for Ethereum application development written in Rust.**
